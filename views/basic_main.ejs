@@ -1,0 +1,318 @@
+<%if(role == ""){%>
+<button onclick="redirectToLogin()">Zaloguj się</button>
+<%} else {%>
+    <%if(role == "użytkownik"){%>
+        <h2>Panel użytkownika
+        <button onclick="redirectToBag()">Pokaż koszyk</button>
+        <button onclick="redirectToLogout()">Wyloguj się</button>
+        </h2>
+    <%}%>
+
+    <%if(role == "administrator"){%>
+        <h2>Panel administratora
+        <button onclick="redirectToUserList()">Pokaż użytkowników</button>
+        <button onclick="redirectToLogout()">Wyloguj się</button>
+        </h2>
+    <%}%>
+<%}%>
+<hr>
+
+<script>
+    function redirectToLogin() {
+        // Przekierowanie do /login
+        window.location.href = '/login';
+    }
+
+    function redirectToBag() {
+        const currentPath = window.location.pathname;  // Pobiera bieżącą ścieżkę URL
+        window.location.href = '/bag' + currentPath;
+    }
+
+    function redirectToUserList() {
+        const currentPath = window.location.pathname; 
+        window.location.href = '/userList' + currentPath;
+    }
+
+    function redirectToLogout() {
+        window.location.href = '/logout';
+    }
+</script>
+
+
+
+<script>
+    //POWYŻEJ WSZYSTKO ROBOCZE 
+    //------------------------------------------------------------------------------
+    //PONIŻEJ WSZYSTKO GOTOWE
+</script>
+
+<h4>Wyszukaj produkt: <input id="productToSearch" type="text" />
+    <button id='btSearch'>Szukaj</button>
+    <button id='btClear'>Wyczyść</button>
+</h4>
+
+<hr>
+
+<h3>Lista produktów:</h3>
+
+<style> td, th { border: 1px solid rgb(0, 0, 0); } </style>
+<table id="list_of_products"> </table>
+
+<hr>
+
+<h4>Dodawanie nowego produktu</h4>
+<table>
+    <thead>
+        <tr>
+            <th>Nowy produkt:</th>
+            <th>Cena</th>
+            <th>Opis</th>
+            <th>Ilość</th>
+        </tr>
+    </thead>
+       
+    <tbody>
+        <tr>
+            <td><input id="product" type="text" /></td>
+            <td><input id="price" type="text" /></td>
+            <td><input id="description" type="text" /></td>
+            <td><input id="amount" type="text" /></td>
+        </tr>
+    </tbody>    
+</table>  
+<button id='btAdd'>Dodaj produkt</button>
+
+
+
+<script>
+    // pobieranie listy produktów
+    async function refreshProducts() {
+        var products = document.getElementById('list_of_products');
+        products.innerHTML = 
+        `<thead>
+            <tr>
+                <th>Id</th>
+                <th>Nazwa produktu</th>
+                <th>Cena</th>
+                <th>Opis</th>
+                <th>Dostępna ilość</th>
+                <th>Dodaj do koszyka</th>
+                <th>Działania administratora</th>
+            </tr>
+        </thead>
+        <tbody>`;
+        var response = await fetch( '/api/product', { method: 'get'} );
+        var jsonResponse = await response.json();
+        for ( var product of jsonResponse ) {
+            products.innerHTML +=
+                `<tr class='productItem'>
+                    <td>${product.id}.</td>
+                    <td>${product.product}</td>
+                    <td>${product.price}</td>
+                    <td>${product.description}</td>
+                    <td>${product.amount}</td>
+                    <td><button class='addToBagButton' type='button' data-id=${product.id}>Dodaj do koszyka</button></td>   
+                    <td> 
+                        <button class='deleteButton' type='button' data-id=${product.id}>Usuń</button>
+                        <button class='editButton' type='button' data-id=${product.id}>Edytuj</button>
+                    </td>   
+                </tr>`;
+        }
+        products.innerHTML += `</tbody>`;
+
+        document.querySelectorAll('.deleteButton').forEach( function( button ) {
+            button.addEventListener('click', deleteProduct);
+        })
+        document.querySelectorAll('.editButton').forEach( function( button ) {
+            button.addEventListener('click', editProduct);
+        })
+        document.querySelectorAll('.addToBagButton').forEach( function( button ) {
+            button.addEventListener('click', addProductToBag);
+        })
+    }
+
+
+    // dodawanie nowego produktu
+    async function addProduct() {
+        var product = document.getElementById('product').value;
+        var price = document.getElementById('price').value;
+        var description = document.getElementById('description').value;
+        var amount = document.getElementById('amount').value;
+        if ( product && price && description && amount) {
+            var response = await fetch(
+                '/api/product',
+                {
+                    method: 'post',
+                    headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify( { product, price, description, amount} )
+                } );
+            var jsonResponse = await response.json();
+            await refreshProducts();
+        } else alert('Wypełnij wszystkie pola nowego produktu');
+    }
+
+    // szukanie istniejącego produktu
+    async function searchProduct() {
+        var productToSearch = document.getElementById('productToSearch').value;
+        
+        if ( productToSearch ) {
+            var products = document.getElementById('list_of_products');
+            products.innerHTML = 
+                `<thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Nazwa produktu</th>
+                        <th>Cena</th>
+                        <th>Opis</th>
+                        <th>Dostępna ilość</th>
+                        <th>Dodaj do koszyka</th>
+                        <th>Działania administratora</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            var response = await fetch( '/api/product', { method: 'get'} );
+            var jsonResponse = await response.json();
+            for ( var product of jsonResponse ) {
+                if(productToSearch == product.product){
+                    products.innerHTML +=
+                    `<tr class='productItem'>
+                        <td>${product.id}.</td>
+                        <td>${product.product}</td>
+                        <td>${product.price}</td>
+                        <td>${product.description}</td>
+                        <td>${product.amount}</td>
+                        <td><button class='addToBagButton' type='button' data-id=${product.id}>Dodaj do koszyka</button></td>   
+                        <td> 
+                            <button class='deleteButton' type='button' data-id=${product.id}>Usuń</button>
+                            <button class='editButton' type='button' data-id=${product.id}>Edytuj</button>
+                    </td>   
+                </tr>`;
+                }
+            }
+            products.innerHTML += `</tbody>`;
+            if(products.innerHTML == '') products.innerHTML = 'Brak produktów o podanej nazwie.'
+        } else alert('Nie podano nazwy wyszukiwanego produktu.');
+
+        document.querySelectorAll('.deleteButton').forEach( function( button ) {
+            button.addEventListener('click', deleteProduct);
+        })
+        document.querySelectorAll('.editButton').forEach( function( button ) {
+            button.addEventListener('click', editProduct);
+        })
+        document.querySelectorAll('.addToBagButton').forEach( function( button ) {
+            button.addEventListener('click', addProductToBag);
+        })
+    
+    }
+
+    // edytowanie istniejącego produktu
+    async function editProduct(e) {
+        var id = e.target.getAttribute('data-id');
+        var products = document.getElementById('list_of_products');
+        products.innerHTML =          
+            `<thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nazwa produktu</th>
+                    <th>Cena</th>
+                    <th>Opis</th>
+                    <th>Dostępna ilość</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        var response = await fetch( '/api/product', { method: 'get'} );
+        var jsonResponse = await response.json();
+
+        for ( var product of jsonResponse ) {
+            if(product.id == id){
+                products.innerHTML +=
+                `<tr class='productItem'>
+                    <td>${product.id}.</td>
+                    <td><input id="edit_product" type="text" /></td>
+                    <td><input id="edit_price" type="text" /></td>
+                    <td><input id="edit_description" type="text" /></td>
+                    <td><input id="edit_amount" type="text" /></td> 
+                    <button class='saveButton' type='button'  data-id=${product.id}>Zapisz</button>
+                    <button class="cancelButton" type="button" data-id="${product.id}">Anuluj</button>  
+                </tr>`;
+            } else {
+            products.innerHTML +=
+                `<tr class='productItem'>
+                    <td>${product.id}.</td>
+                    <td>${product.product}</td>
+                    <td>${product.price}</td>
+                    <td>${product.description}</td>
+                    <td>${product.amount}</td> 
+                </tr>`;
+            }
+        }
+
+        document.querySelectorAll('.saveButton').forEach( function( button ) {
+            button.addEventListener('click', updateProduct);
+        })
+
+        document.querySelectorAll('.cancelButton').forEach(function (button) {
+        button.addEventListener('click', cancelEdit);
+        });
+    }
+
+    async function updateProduct(e) {
+        e.preventDefault();
+        var id = e.target.getAttribute('data-id');
+        var product = document.getElementById('edit_product').value;
+        var price = document.getElementById('edit_price').value;
+        var description = document.getElementById('edit_description').value;
+        var amount = document.getElementById('edit_amount').value;
+
+        if ( product && price && description && amount ) {
+            var response = await fetch(`/api/product/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ product, price, description, amount }),
+            });
+        } else alert('Wypełnij wszystkie pola nowego produktu');
+
+        var jsonResponse = await response.json();
+        await refreshProducts();
+    }
+
+    function cancelEdit(e) {
+        e.preventDefault();
+        refreshProducts(); 
+    }
+
+    // usuwanie istniejącego produktu
+    async function deleteProduct(e) {
+        e.preventDefault(); // gdyby był formularz to zabezpiecza przed odesłaniem
+        var id = e.target.getAttribute('data-id');
+        await fetch(`/api/product/${id}`, { method: 'delete'});
+        await refreshProducts();
+    }
+
+    //dodawanie produktu do koszyka
+    async function addProductToBag(e) {
+        e.preventDefault(); 
+        var id = e.target.getAttribute('data-id');
+        await fetch(`/api/addToBag/${id}`, { method: 'post'});
+        //await refreshProducts(); czy trzeba? NIE
+    }
+
+    //aktualizowanie/ ładowanie strony
+    window.addEventListener('load', function() {
+        refreshProducts();
+
+        var btAdd = document.getElementById('btAdd');
+        btAdd.addEventListener('click', addProduct);
+
+        var btSearch = document.getElementById('btSearch');
+        btSearch.addEventListener('click', searchProduct);
+
+        var btClear = document.getElementById('btClear');
+        btClear.addEventListener('click', refreshProducts);
+    });
+</script>

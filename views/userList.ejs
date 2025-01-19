@@ -1,0 +1,9 @@
+<h2>Lista użytkowników</h2>
+<button onclick="redirectToGoBack()">Powrót</button>
+
+<script>
+    function redirectToGoBack() {
+        const currentPath = window.location.pathname;
+        window.location.href = '/goBack' + currentPath;
+    }
+</script>

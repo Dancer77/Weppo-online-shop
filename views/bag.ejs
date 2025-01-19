@@ -1,0 +1,104 @@
+<h2>Koszyk</h2>
+<hr>
+
+<style> td, th { border: 1px solid rgb(0, 0, 0); } </style>
+<table>
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Nazwa produktu</th>
+            <th>Cena</th>
+            <th>Ilość</th>
+        </tr>
+    </thead>
+    <tbody id='list_of_products_in_bag'>
+        
+    </tbody>
+</table>
+<div id='sum_in_bag'></div>
+
+<script>//PRZYCISK ROBOCZY</script>
+<button onclick="redirectToOrdered()">Złóż zamówienie</button>
+
+<script>
+    //PRZYCISK ROBOCZY
+    function redirectToOrdered() {
+        const currentPath = window.location.pathname;
+        window.location.href = '/ordered' + currentPath;
+    }
+
+    //pobieranie koszyka
+    async function refreshBag() {
+        var products = document.getElementById('list_of_products_in_bag');
+        products.innerHTML = '';
+        var response = await fetch( '/api/bag', { method: 'get'} );
+        var jsonResponse = await response.json();
+        for ( var product of jsonResponse ) {
+            products.innerHTML +=
+                `<tr class='productItem'>
+                    <td>${product.id}.</td>
+                    <td>${product.product}</td>
+                    <td>${product.price}</td>
+                    <td>
+                        <button class='lessButton' type='button' data-id=${product.id}><</button>
+                        ${product.amount} 
+                        <button class='moreButton' type='button' data-id=${product.id}>></button>
+                    </td> 
+                </tr>`;
+        }
+
+        document.querySelectorAll('.lessButton').forEach( function( button ) {
+            button.addEventListener('click', lessProduct);
+        })
+        document.querySelectorAll('.moreButton').forEach( function( button ) {
+            button.addEventListener('click', moreProduct);
+        })
+    }
+
+    //zmniejszanie ilości produktu w koszyku
+    async function lessProduct(e) {
+        e.preventDefault(); 
+        var id = e.target.getAttribute('data-id');
+        var response = await fetch(`/api/bagLess/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(),
+        });
+        //var jsonResponse = await response.json();
+        await refreshBag();
+        await refreshSum();
+    }
+
+    //zwiększanie ilości produktu w koszyku
+    async function moreProduct(e) {
+        e.preventDefault(); 
+        var id = e.target.getAttribute('data-id');
+        await fetch(`/api/addToBag/${id}`, { method: 'post'});
+        await refreshBag();
+        await refreshSum();
+    }
+
+    //zliczanie sumy w koszyku
+    async function refreshSum() {
+        var sum = document.getElementById('sum_in_bag');
+        var response = await fetch( '/api/bag', { method: 'get'} );
+        var jsonResponse = await response.json();
+        var totalSum = 0;
+        for ( var product of jsonResponse ) {
+            totalSum += product.price * product.amount;
+        }
+        totalSum = Math.round(totalSum * 100) / 100;
+        sum.innerHTML = 
+            `<div class='sumInBag'>
+                Cena całkowita: ${totalSum} zł
+            </div>`;
+    }
+
+    //aktualizowanie/ ładowanie strony
+    window.addEventListener('load', function() {
+        refreshBag();
+        refreshSum();
+    });
+</script>

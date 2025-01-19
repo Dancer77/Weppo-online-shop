@@ -1,3 +1,7 @@
+//TODO: przy czyszczeniu wyszukiwania, wyszukiwany tekst zostaje wpisany w pasku wyszukiwania
+//TODO: walidacja, czy nowy produkt jest poprawnie wpiisany (cena i ilość jako liczba)
+//TODO: przy edycji powinniśmy widzieć stare dane i móc je edytować wsm zamiast wpisywać od nowa
+
 var http = require('http');
 var express = require('express');
 var expressLayouts = require('express-ejs-layouts');
@@ -51,7 +55,6 @@ function checkAmount(amountToAdd, id){
         if(amountOfProduct >= amountInBag + amountToAdd) return true;
         else return false;
     } else return true;
-    
 }
 
 app.get('/api/bag', (req, res) => {
@@ -80,6 +83,7 @@ app.post('/api/addToBag/:id', (req, res) => {
 
 //POWYŻEJ WSZYSTKO GOTOWE
 //----------------------------------------------------------------------------
+//TODO
 //PONIŻEJ WSZYSTKO ROBOCZE - TRZEBA UWZGLĘDNIĆ LOGOWANIE
 
 app.get('/', (req, res) => {

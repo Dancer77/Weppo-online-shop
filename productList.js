@@ -1,11 +1,28 @@
-let products = [
-    { id: 1, product: 'Krzesło', price: 79.99, description: 'drewniane', amount: 10},
-    { id: 2, product: 'Stół', price: 129.99, description: 'metalowy', amount: 3 },
-    ];
+const db = require('./db_operations')
 
-let newId = products.length + 1;
+let products = [];
 
-function getProducts() {
+//statyczne newId nie zda egzaminu, bo na początku programu jeszcze nie mamy wczytanych produktów z bazy danych
+function getNewId() {
+    id = null
+    if (id == null) {
+        //pozyskanie największego id produktu
+        id = products.reduce( (max, product) => {
+            return product.id > max ? product.id : max;
+        }, 0);
+    }
+    return ++id;
+}
+//let newId = products.length + 1;
+
+async function getProducts() {
+    if (products.length == []){
+        try {
+            products = await db.getProductsFromDb();
+        } catch (err) {
+            console.error('Błąd podczas pobierania produktów:', err);
+        }
+    }
     return products;
 }
 
@@ -14,28 +31,32 @@ function createNewProduct(product, price, description, amount, id) {
     if ( id ) {
         newProduct.id = id;
     } else {
-        newProduct.id = newId++;
+        newProduct.id = getNewId();
     }
     return newProduct;
 }
 
-function addProduct(product, price, description, amount) {
+async function addProduct(product, price, description, amount) {
     var newProduct = createNewProduct(product, price, description, amount);
     products.push( newProduct );
+    console.log(products);
+    await db.addProductToDb(newProduct);
     return newProduct;
 }
 
-function updateProduct(id, product, price, description, amount) {
+async function updateProduct(id, product, price, description, amount) {
     removeProduct(id);
     var newProduct = createNewProduct(product, price, description, amount, id);
     products.push( newProduct );
+    await db.updateProductInDb(newProduct);
     return newProduct;
 }
 
-function removeProduct(id) {
+async function removeProduct(id) {
     products = products.filter( product => product.id != id );
-}
-  
+    await db.removeProductFromDb(id);
+};
+
 module.exports = {
     getProducts,
     addProduct,

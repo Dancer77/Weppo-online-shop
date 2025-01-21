@@ -1,4 +1,4 @@
-const db = require('./db_operations')
+const db = require('./db_products_operations')
 
 let products = [];
 

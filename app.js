@@ -3,45 +3,19 @@
 //TODO: przy edycji powinniśmy widzieć stare dane i móc je edytować wsm zamiast wpisywać od nowa
 //TODO: dodać przycisk w koszyku kierujący do strony głównej
 
+//TODO: dodać tworzenie i usuwanie kont
+//TODO: dodać synchronizację z koszykiem
+
 const http = require('http');
 const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
 const sql = require('mssql')
+const config = require('./sqlConfig')
 
 const productRepo = require('./productList');
 const bagRepo = require('./bag');
 const orderRepo = require('./orders');
 var app = express();
-
-//baza danych (na serwerze lokalnym)
-const sqlConfig = {
-    user: 'abc',
-    password: 'abc',
-    database: 'Weppodb',
-    server: 'localhost',
-    options: {
-        encrypt: true,
-        trustServerCertificate: true
-    }
-};
-//połączenie z bazą danych
-
-//var conn = new sql.ConnectionPool (
-//    "Server=localhost,1433;Database=Weppodb;user id=abc;password=abc;Trusted_Connection=True;Encrypt=true;trustServerCertificate: true"
-//)
-async function connectToDatabase() {
-    try {
-        //await conn.connect();
-        await sql.connect(sqlConfig)
-        console.log('Połączono z MSSQL');
-    } catch (err) {
-        //if (conn.connected)
-            //conn.close();
-        console.error('Błąd połączenia z MSSQL:', err);
-    }
-}
-
-connectToDatabase();
 
 app.set('view engine', 'ejs');
 app.set('views', './views');
@@ -49,6 +23,9 @@ app.set('views', './views');
 app.use( express.urlencoded({extended: true}));
 app.use(expressLayouts);
 app.use(express.json());  
+
+//połączenie z bazą danych
+config.connectToDatabase();
 
 //Zarządzanie produktami
 app.get('/api/product', async (req, res) => {
@@ -151,9 +128,38 @@ app.get('/login', (req, res) => {
     res.render('login', {role: "", layout: 'main_layout'});
 });
 
-app.post('/login', (req, res) => {
-    const {role} = req.body;
-    res.redirect(`/?role=${role}`);
+//logowanie użytkownika
+app.post('/login', async (req, res) => {
+    try {
+        const username = req.body.name;
+        const userPassword = req.body.password;
+        console.log(username + ' ' + userPassword)
+
+        const request = new sql.Request(config.pool)
+        request
+            .input("username", username)
+            .input("userPassword", userPassword)
+
+        const result = await request
+            .query('select * from users_table where name = (@username) and password = (@userPassword)');
+
+        console.log(result.recordset)
+
+        if (result.recordset.length === 1) {
+            //przekierowanie do strony głównej
+            const user = result.recordset[0]; // Pobranie użytkownika
+            const userId = user.id; // Pobieranie id 
+            const role = user.role; //Pobieranie roli
+
+            res.redirect(`/?role=${role}`);
+        }
+        else {
+            //alert("Błędna nazwa użytkownika lub hasło.");
+        }
+
+    } catch (err) {
+        console.error('Chuj przy logowaniu:', err)
+    }
 });
 
 app.get('/bag', (req, res) => {

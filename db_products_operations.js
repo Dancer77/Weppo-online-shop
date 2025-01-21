@@ -1,4 +1,5 @@
 const sql = require('mssql');
+const config = require('./sqlConfig')
 
 async function getProductsFromDb() {
     try {
@@ -7,6 +8,7 @@ async function getProductsFromDb() {
             console.log( `${r.id} ${r.product}`);
         })
         console.log('to już wszystkie\n');
+
         return result.recordset;
     } catch (err) {
         console.error('Błąd podczas pobierania produktów:', err);

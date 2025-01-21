@@ -1,5 +1,4 @@
-let bag = [
-    ];
+let bag = [];
 
 function getBag() {
     return bag;
@@ -9,12 +8,11 @@ function addToBag(id, product, price, amount) {
     var newInBag = bag.find(product => product.id == id);
     if(newInBag) {
         newInBag.amount += amount;
-        return newInBag;
     } else {
         newInBag = {id, product, price, amount};
         bag.push( newInBag );
-        return newInBag;
     }
+    return newInBag;
 }
 
 function updateAmount(id, amount) {

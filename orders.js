@@ -1,5 +1,4 @@
-let orders = [
-    ];
+let orders = [];
 
 function getOrders() {
     return orders;

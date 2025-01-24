@@ -4,6 +4,12 @@
     <button id="btLogin">Zaloguj</button> 
 </form>
 
+<% if ( locals.message ) { %>
+    <div class='message'>
+        <%= locals.message %>
+    </div>
+<% } %>
+
 <script>
 /*
     window.addEventListener('load', function() {

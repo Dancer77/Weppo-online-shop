@@ -1,4 +1,4 @@
-<%if(role == ""){%>
+<%if(role == null){%>
 <button onclick="redirectToLogin()">Zaloguj się</button>
 <%} else {%>
     <%if(role == "użytkownik"){%>
@@ -8,7 +8,7 @@
         </h2>
     <%}%>
 
-    <%if(role == "administrator"){%>
+    <%if(role == "admin"){%>
         <h2>Panel administratora
         <button onclick="redirectToUserList()">Pokaż użytkowników</button>
         <button onclick="redirectToLogout()">Wyloguj się</button>

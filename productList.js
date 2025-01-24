@@ -1,10 +1,11 @@
-const db = require('./db_products_operations')
+const db = require('./dbOperations/db_products_operations')
 
 let products = [];
 
+id = null
+
 //statyczne newId nie zda egzaminu, bo na początku programu jeszcze nie mamy wczytanych produktów z bazy danych
 function getNewId() {
-    id = null
     if (id == null) {
         //pozyskanie największego id produktu
         id = products.reduce( (max, product) => {
@@ -56,6 +57,7 @@ async function removeProduct(id) {
     products = products.filter( product => product.id != id );
     await db.removeProductFromDb(id);
 };
+
 
 module.exports = {
     getProducts,

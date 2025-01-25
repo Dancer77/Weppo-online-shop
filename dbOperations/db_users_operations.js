@@ -20,8 +20,23 @@ async function addUserToDb(user) {
         console.error('Błąd przy dodawaniu użytkownika:', err);
     }
 }
+async function removeUserFromDb(id) {
+    try {
+        //usunięcie wszystkich produktów w koszyku użytkownika
+        await sql.query`DELETE FROM users_products_table 
+                        WHERE user_id = ${id}`;
+
+        await sql.query`DELETE FROM users_table 
+                        WHERE id = ${id}`;
+        console.log('Użytkownik usunięty z bazy danych');
+    } catch (err) {
+        console.error('Błąd przy usuwaniu użytkownika z bazy:', err);
+    }
+
+}
 
 module.exports = {
     getUsersFromDb,
-    addUserToDb
+    addUserToDb,
+    removeUserFromDb
 }

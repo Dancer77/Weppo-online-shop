@@ -11,37 +11,3 @@
         <%= locals.message %>
     </div>
 <% } %>
-
-<script>
-/*
-    window.addEventListener('load', function() {
-
-        var btLogin = document.getElementById('btLogin');
-        btLogin.addEventListener('click', login);
-
-    });
-
-    async function login() {
-        try {
-            var username = document.getElementById('name').value;
-            var userPassword = document.getElementById('password').value;
-
-            const result = await sql
-                            .input("username", username)
-                            .input("userPassword", userPassword)
-                            .query('select * from users_table where name = (@username) and password = (@userPassword)');
-
-            if (result.recordset.length == 1) {
-                alert("Witaj" + username + "!");
-                //przekierowanie do strony głównej
-            }
-            else {
-                alert("Błędna nazwa użytkownika lub hasło.");
-            }
-
-        } catch (err) {
-            console.error('Chuj przy logowaniu:', err)
-        }
-    }*/
-</script>
-

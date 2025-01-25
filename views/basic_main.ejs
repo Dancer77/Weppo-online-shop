@@ -5,6 +5,7 @@
         <h2>Panel użytkownika
         <button onclick="redirectToBag()">Pokaż koszyk</button>
         <button onclick="redirectToLogout()">Wyloguj się</button>
+        <button onclick="redirectToRemoveAccount()">Usuń konto</button>
         </h2>
     <%}%>
 
@@ -18,8 +19,12 @@
 <hr>
 
 <script>
+    function redirectToRemoveAccount() {
+        window.location.href = '/removeAccount';
+    }
+
+    // Przekierowanie do /login
     function redirectToLogin() {
-        // Przekierowanie do /login
         window.location.href = '/login';
     }
 
@@ -59,28 +64,29 @@
 
 <hr>
 
-<h4>Dodawanie nowego produktu</h4>
-<table>
-    <thead>
-        <tr>
-            <th>Nowy produkt:</th>
-            <th>Cena</th>
-            <th>Opis</th>
-            <th>Ilość</th>
-        </tr>
-    </thead>
-       
-    <tbody>
-        <tr>
-            <td><input id="product" type="text" /></td>
-            <td><input id="price" type="text" /></td>
-            <td><input id="description" type="text" /></td>
-            <td><input id="amount" type="text" /></td>
-        </tr>
-    </tbody>    
-</table>  
-<button id='btAdd'>Dodaj produkt</button>
-
+<%if (role == "admin") {%>
+    <h4>Dodawanie nowego produktu</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Nowy produkt:</th>
+                <th>Cena</th>
+                <th>Opis</th>
+                <th>Ilość</th>
+            </tr>
+        </thead>
+        
+        <tbody>
+            <tr>
+                <td><input id="product" type="text" /></td>
+                <td><input id="price" type="text" /></td>
+                <td><input id="description" type="text" /></td>
+                <td><input id="amount" type="text" /></td>
+            </tr>
+        </tbody>    
+    </table>  
+    <button id='btAdd'>Dodaj produkt</button>
+<%}%>
 
 
 <script>
@@ -287,7 +293,7 @@
 
     // usuwanie istniejącego produktu
     async function deleteProduct(e) {
-        e.preventDefault(); // gdyby był formularz to zabezpiecza przed odesłaniem
+        e.preventDefault(); // gdyby był formularz to zabezpiecza przed odesłaniem - dobrze wiedzieć
         var id = e.target.getAttribute('data-id');
         await fetch(`/api/product/${id}`, { method: 'delete'});
         await refreshProducts();

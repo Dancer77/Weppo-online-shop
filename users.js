@@ -29,15 +29,28 @@ async function addUser(name, password, email) {
     try {
         users = await getUsers();
         let newId = getNewId();
-        users.push({name, password, email, role: 'użytkownik', id: newId });
-        await db.addUserToDb({name, password, email, role: 'użytkownik', id: newId });
+        var newUser = {name, password, email, role: 'użytkownik', id: newId };
+
+        users.push(newUser);
+        await db.addUserToDb(newUser);
+        users = [];
 
     } catch (err) {
         console.error('Błąd przy dodawaniu użytkownika:', err);
     }
 }
 
+async function removeUser(id) {
+    try {
+        await db.removeUserFromDb(id);
+        users = [];
+    } catch (err) {
+        console.error('Błąd przy usuwaniu użytkownika:', err);
+    }
+}
+
 module.exports = {
     getUsers,
-    addUser
+    addUser,
+    removeUser
 }

@@ -11,7 +11,7 @@ async function getBagFromDb(userId) {
         var products = await productRepo.getProducts();
         //console.log('Koszyk pobrany z bazy danych:\n', bag);
 
-        // bag przetrzymuje obiekty w formacie {id, product, proce, amount}
+        // bag przetrzymuje obiekty w formacie {id, product, price, amount}
         bag = bag.map(b => {
             var product = products.find(p => p.id == b.product_id);
             if (!product) {

@@ -1,10 +1,12 @@
+const db = require('./dbOperations/db_orders_operations');
+
 let orders = [];
 
 function getOrders() {
     return orders;
 }
 
-let newId = orders.length + 1;
+//let newId = orders.length + 1;
 
 function addOrder(bag, user, status) {
     var id = newId++;

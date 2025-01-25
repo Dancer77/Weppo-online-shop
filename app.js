@@ -3,12 +3,18 @@
 //TODO: przy edycji powinniśmy widzieć stare dane i móc je edytować wsm zamiast wpisywać od nowa
 //TODO: dodać przycisk w koszyku kierujący do strony głównej (obecny się nie wyświetla)
 //TODO: (opcjonalnie) wyszukiwanie tylko po częściowej nazwie (np: wpisanie "rze" powinno powodować wyświetlanie produktu o nazwie "Krzesło")
-//TODO: po dodaniu nowego produktu, tabelka dodawania kolejnego produktu nie powinna zawierać danych właśniej dodanego - powinna być pusta
+//TODO: po dodaniu nowego produktu, tabelka dodawania kolejnego produktu nie powinna zawierać danych właśnie dodanego - powinna być pusta
 //TODO: przycisk powrotu z userList nie działa
 //TODO: id produktu nie powinno być wyświetlane wsm
 //TODO: (opcjonalnie) przycisk wylogowania powinien być na każdej stronie
 
+
+//Moje:
 //TODO: przy klikaniu przycisków dodaj do koszyka / usuń nie mając odpowiedniej roli w teorii powinna się wyświetlać strona logowania, ale coś jej to uniemożliwia - do sprawdzenia
+// do ^ pewnie przez to, że te przyciski są trochę inaczej obsługiwane w plikach .ejs niż te w app.js. Nie wiem niestey jak to obejść, więc najlepiej pokazywać te przyciski tylko uprawnionym
+//do tego użytkownikom (czyli sprawdzać ich rolę i wtedy wyświetlać albo je wyświetlać w tabelce albo nie)
+//z formularzem dodawania nowego produktu było to dość proste, ale z tamtymi przyciskami coś mi nie szło, jeszcze popracuję nad tym
+
 //TODO: nie działa walidacja warunkowego wyświetlania przycisków w menu głównym, nwm wsm dlaczego, bo jak na moje powinno działać
 //TODO: dodać usuwanie kont
 //TODO: nie działa ograniczenie liczby produktów w koszyku
@@ -72,7 +78,6 @@ app.post('/api/product', authorize('admin'), async (req, res) => {
     } catch (err) {
         console.error('Chuj2', err)
     }
-    
 });
 
 //aktualizowanie ptroduktu
@@ -130,7 +135,7 @@ app.put('/api/bagLess/:id', authorize('użytkownik'), async (req, res) => {
     res.status(200).end();
 });
 
-//dodawanie dokoszyka
+//dodawanie do koszyka
 app.post('/api/addToBag/:id', authorize('użytkownik'), async (req, res) => {
     try {
         var id = req.params.id;
@@ -281,7 +286,7 @@ app.post('/register', async (req, res) => {
             return;
         } else if (userPassword !== scdPassword) {
             res.render('register', {message: 'Podane hasła nie są takie same', layout: 'main_layout'});
-            return;
+            return;//nwm czy to jest potrzebne
         }
 
         await usersRepo.addUser(username, userPassword, email);
@@ -313,6 +318,13 @@ app.get('/logout', authorize('użytkownik', 'admin'), (req, res) => {
     clearAtLogout(req);
     res.cookie('user', '', { maxAge: -1} );
     res.redirect(`/`);
+})
+
+app.get('/removeAccount', authorize('użytkownik'), async(req, res) => {
+
+    const userId = req.session.userId;
+    await usersRepo.removeUser(userId);
+    res.redirect('/logout');
 })
 
 http.createServer( app ).listen(3000);

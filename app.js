@@ -8,8 +8,9 @@
 //TODO: id produktu nie powinno być wyświetlane wsm
 //TODO: (opcjonalnie) przycisk wylogowania powinien być na każdej stronie
 
-
-//TODO: dodać tworzenie i usuwanie kont
+//TODO: przy klikaniu przycisków dodaj do koszyka / usuń nie mając odpowiedniej roli w teorii powinna się wyświetlać strona logowania, ale coś jej to uniemożliwia - do sprawdzenia
+//TODO: nie działa walidacja warunkowego wyświetlania przycisków w menu głównym, nwm wsm dlaczego, bo jak na moje powinno działać
+//TODO: dodać usuwanie kont
 //TODO: nie działa ograniczenie liczby produktów w koszyku
 
 const http = require('http');
@@ -23,6 +24,7 @@ const session = require('express-session');
 const productRepo = require('./productList');
 const bagRepo = require('./bag');
 const orderRepo = require('./orders');
+const usersRepo = require('./users');
 const pwd = require('./password');
 
 var app = express();
@@ -159,7 +161,7 @@ app.post('/api/addToBag/:id', authorize('użytkownik'), async (req, res) => {
 //}
 
 
-//middleware - strażnik, czy użytkownik jest zalogowany (czy ma ciastko)
+//middleware - strażnik, czy użytkownik jest zalogowany (i czy ma ciastko)
 function authorize(...roles) {
     return function(req, res, next) {
         console.log('sesja: ', req.session);
@@ -257,6 +259,38 @@ app.post('/login', async (req, res) => {
         console.error('Chuj przy logowaniu:', err)
     }
 });
+
+//strona rejestracji nowego użytkownika
+app.get('/register', (req, res) => {
+    res.render('register', {layout: 'main_layout'});
+});
+
+//rejestracja nowego użytkownika
+app.post('/register', async (req, res) => {
+    try {
+        const username = req.body.name;
+        const userPassword = req.body.password;
+        const scdPassword = req.body.secondPassword;
+        const email = req.body.email;
+
+        users = await usersRepo.getUsers();
+
+        //sprawdzanie poprawności nazwy i hasła
+        if (users.find(user => user.name === username)) {
+            res.render('register', {message: 'Użytkownik o podanej nazwie już istnieje', layout: 'main_layout'});
+            return;
+        } else if (userPassword !== scdPassword) {
+            res.render('register', {message: 'Podane hasła nie są takie same', layout: 'main_layout'});
+            return;
+        }
+
+        await usersRepo.addUser(username, userPassword, email);
+
+        res.redirect('/login');
+    } catch (err) {
+        console.error('Chuj przy rejestracji:', err)
+    }
+})
 
 //strona koszyka
 app.get('/bag', authorize('użytkownik'), (req, res) => {

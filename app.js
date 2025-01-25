@@ -8,8 +8,9 @@
 //TODO: id produktu nie powinno być wyświetlane wsm
 //TODO: (opcjonalnie) przycisk wylogowania powinien być na każdej stronie
 
+
 //TODO: dodać tworzenie i usuwanie kont
-//TODO: dodać synchronizację z koszykiem
+//TODO: nie działa ograniczenie liczby produktów w koszyku
 
 const http = require('http');
 const express = require('express');
@@ -22,6 +23,8 @@ const session = require('express-session');
 const productRepo = require('./productList');
 const bagRepo = require('./bag');
 const orderRepo = require('./orders');
+const pwd = require('./password');
+
 var app = express();
 
 app.set('view engine', 'ejs');
@@ -39,8 +42,8 @@ app.use(session({
     saveUninitialized: true,
     cookie: {
         httpOnly: true, // Chroni przed atakami XSS
-        secure: false,  // Ustaw na true, jeśli używasz HTTPS
-        maxAge: 1000 * 60 * 60 // Ważność pliku cookie w ms (np. 1 godzina)
+        secure: false,
+        maxAge: 1000 * 60 * 60 // Ważność pliku cookie w ms
     }
 }));
 
@@ -195,7 +198,7 @@ app.get('/', (req, res) => {
 app.get('/login', (req, res) => {
     console.log('weszło do logowania');
     
-    //FIXME: przy przekierowaniu z authorize, strona logowania nie jest wyświetlana
+    //FIXME: przy przekierowaniu z authorize z przyisków, strona logowania nie jest wyświetlana
     if (req.session.userId) {
         console.log('Użytkownik jest już zalogowany');
         //TODO: dodać komunikat, że użytkownik jest już zalogowany

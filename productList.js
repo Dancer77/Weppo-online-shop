@@ -45,6 +45,11 @@ async function addProduct(product, price, description, amount) {
     return newProduct;
 }
 
+async function removeProduct(id) {
+    products = products.filter( product => product.id != id );
+    await db.removeProductFromDb(id);
+};
+
 async function updateProduct(id, product, price, description, amount) {
     removeProduct(id);
     var newProduct = createNewProduct(product, price, description, amount, id);
@@ -53,10 +58,6 @@ async function updateProduct(id, product, price, description, amount) {
     return newProduct;
 }
 
-async function removeProduct(id) {
-    products = products.filter( product => product.id != id );
-    await db.removeProductFromDb(id);
-};
 
 
 module.exports = {

@@ -8,7 +8,9 @@ function getNewId() {
     if (id == null) {
         //pozyskanie największego id użytkownika
         id = users.reduce( (max, user) => {
-            return user.id > max ? user.id : max;
+            return user.id > max 
+                ? user.id 
+                : max;
         }, 0);
     }
     return ++id;

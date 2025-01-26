@@ -9,15 +9,15 @@
 //TODO: (opcjonalnie) przycisk wylogowania powinien być na każdej stronie
 
 
-//Moje:
-//TODO: przy klikaniu przycisków dodaj do koszyka / usuń nie mając odpowiedniej roli w teorii powinna się wyświetlać strona logowania, ale coś jej to uniemożliwia - do sprawdzenia
-// do ^ pewnie przez to, że te przyciski są trochę inaczej obsługiwane w plikach .ejs niż te w app.js. Nie wiem niestey jak to obejść, więc najlepiej pokazywać te przyciski tylko uprawnionym
-//do tego użytkownikom (czyli sprawdzać ich rolę i wtedy wyświetlać albo je wyświetlać w tabelce albo nie)
-//z formularzem dodawania nowego produktu było to dość proste, ale z tamtymi przyciskami coś mi nie szło, jeszcze popracuję nad tym
+//TODO: dorobić obsługę zamówień
+//TODO: dorobić wyświetlanie listy użytkowników
+//TODO: (opcjonalnie) jak się edytuje produkt, to znika on ze wszystkich koszyków (bo jest fizycznie usuwany z bazy i dodawany jest nowy), możnaby to zmienić w wolnej chwili
+//TODO: (jak starczy czasu) żeby edytowanie produktu było możliwe, powinienem jakoś rozwiązać cykkl zależności między modułami (db_bags_operations.js, db_products_operations.js)
+//^ póki co na sztywno jest przekopiowana część frunkcji removeFromBagsInDb do db_products_operations.js
+//^^ewentualnie można zrobić edytowanie produktu zamiast jego usuwania i wstawiania, wtedy tego problemu nie będzie
 
-//TODO: nie działa walidacja warunkowego wyświetlania przycisków w menu głównym, nwm wsm dlaczego, bo jak na moje powinno działać
-//TODO: dodać usuwanie kont
-//TODO: nie działa ograniczenie liczby produktów w koszyku
+//TODO: nie działa ograniczenie liczby produktów w koszyku edit: już działa, tylko trzeba wolno klikać dodawanie ponad limit
+//  bo inaczej się wywala - pewnie jest zbyt kosztowne czy coś (na razie to olać)
 
 const http = require('http');
 const express = require('express');
@@ -114,9 +114,20 @@ async function checkAmount(amountToAdd, id, myBag){
         var productInBag = bag.find(product => product.id == id);
         if(productInBag){
             var amountInBag = productInBag.amount;
-            if(amountOfProduct >= amountInBag + amountToAdd) return true;
-            else return false;
-        } else return true;
+            //console.log('Max produktu: ', amountOfProduct);
+            //console.log('Ilość w koszyku: ', amountInBag);
+            //console.log('Ilość do dodania: ', amountToAdd);
+            if(amountOfProduct >= amountInBag + amountToAdd) {
+                //console.log('Można dodać produkt');
+                return true;
+            } else {
+                //console.log('Nie można dodać produktu');
+                return false;
+            }
+        } else {
+            //console.log('Można dodać produkt, nie ma go w koszyku');
+            return true;
+        }
     } catch (err) {
         console.error('Chuj5', err);
     }
@@ -143,10 +154,11 @@ app.post('/api/addToBag/:id', authorize('użytkownik'), async (req, res) => {
         var myBag = await bagRepo.getBag(req.session.userId);
         var {i, product, price} = products.find(product => product.id == id);
     
-        if(checkAmount(1, id, myBag)) {
+        if(await checkAmount(1, id, myBag)) {
             var newInBag = await bagRepo.addToBag(id, product, price, 1);
             res.json(newInBag)
         } //OPCJONALNIE: dodanie komunikatu, że dodana została maksymalna ilość produktu 
+        return;
     } catch (err) {
         console.error('Chujjj', err);
     }
@@ -299,7 +311,7 @@ app.post('/register', async (req, res) => {
 
 //strona koszyka
 app.get('/bag', authorize('użytkownik'), (req, res) => {
-    res.render('bag', {/*role: req.query.role,*/ layout: 'main_layout'});
+    res.render('bag', { layout: 'main_layout'});
 });
 
 //strona listy użytkowników

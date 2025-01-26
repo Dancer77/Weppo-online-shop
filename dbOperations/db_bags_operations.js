@@ -1,6 +1,6 @@
 const sql = require('mssql');
 
-const productRepo = require('../productList');
+const { getProducts } = require('../productList');
 
 async function getBagFromDb(userId) {
     try {
@@ -8,7 +8,7 @@ async function getBagFromDb(userId) {
                                     FROM users_products_table 
                                     WHERE user_id = ${userId}`;
         var bag = result.recordset; //pobranie koszyka z bazy, zapisane w formie listy obiektów {product_id, amount_in_bag}
-        var products = await productRepo.getProducts();
+        var products = await getProducts();
         //console.log('Koszyk pobrany z bazy danych:\n', bag);
 
         // bag przetrzymuje obiekty w formacie {id, product, price, amount}
@@ -65,7 +65,7 @@ async function deleteFromBagInDb(productId, userId) {
     }
 }
 
-///usuwa produkt z koszyka wszystkich użytkowników
+///usuwa produkt z koszyków wszystkich użytkowników
 async function removeFromBagsInDb(productId) {
     try {
         await sql.query`DELETE FROM users_products_table 

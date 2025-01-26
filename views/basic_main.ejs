@@ -43,13 +43,6 @@
     }
 </script>
 
-
-<!--
-    //POWYŻEJ WSZYSTKO ROBOCZE 
-    //------------------------------------------------------------------------------
-    //PONIŻEJ WSZYSTKO GOTOWE
--->
-
 <h4>Wyszukaj produkt: <input id="productToSearch" type="text" />
     <button id='btSearch'>Szukaj</button>
     <button id='btClear'>Wyczyść</button>
@@ -90,40 +83,69 @@
 
 
 <script>
-    // pobieranie listy produktów
-    async function refreshProducts() {
+    const role = "<%- role %>";
+    
+    //zrobiłem wspólną funkcję dla wyświetlania i wyszukiwania, żeby łatwiej było debugować - jak przeczytasz to usuń ten komentarz
+    async function constructTableContext(productToSearch) {
         var products = document.getElementById('list_of_products');
-        products.innerHTML = 
-        `<thead>
-            <tr>
-                <th>Id</th>
-                <th>Nazwa produktu</th>
-                <th>Cena</th>
-                <th>Opis</th>
-                <th>Dostępna ilość</th>
-                <th>Dodaj do koszyka</th>
-                <th>Działania administratora</th>
-            </tr>
-        </thead>
+
+        //obiekt products.innerHTML musi dostać na raz całą skonstruowaną tabelę, inaczej przeglądarka może coś w niej namieszać
+        //konstruujemy tabelkę w tableContext i potem przypisujemy ją do products.innerHTML
+        tableContext = 
+            `<thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nazwa produktu</th>
+                    <th>Cena</th>
+                    <th>Opis</th>
+                    <th>Dostępna ilość</th>`
+        //warunkowe wyświetlanie przycisków w zależności od roli
+        if (role == 'użytkownik') {
+            tableContext += `
+                    <th>Dodaj do koszyka</th>`
+        } else if (role == 'admin') {
+            tableContext += `
+                    <th>Działania administratora</th>`
+        }
+        tableContext += `
+                </tr>
+            </thead>
         <tbody>`;
         var response = await fetch( '/api/product', { method: 'get'} );
         var jsonResponse = await response.json();
         for ( var product of jsonResponse ) {
-            products.innerHTML +=
-                `<tr class='productItem'>
-                    <td>${product.id}.</td>
-                    <td>${product.product}</td>
-                    <td>${product.price}</td>
-                    <td>${product.description}</td>
-                    <td>${product.amount}</td>
-                    <td><button class='addToBagButton' type='button' data-id=${product.id}>Dodaj do koszyka</button></td>   
-                    <td> 
-                        <button class='deleteButton' type='button' data-id=${product.id}>Usuń</button>
-                        <button class='editButton' type='button' data-id=${product.id}>Edytuj</button>
-                    </td>   
-                </tr>`;
+            if(productToSearch == undefined || productToSearch == product.product){
+                tableContext +=
+                    `<tr class='productItem'>
+                        <td>${product.id}.</td>
+                        <td>${product.product}</td>
+                        <td>${product.price}</td>
+                        <td>${product.description}</td>
+                        <td>${product.amount}</td>`
+                //warunkowe wyświetlanie przycisków w zależności od roli
+                if (role == 'użytkownik') {
+                    tableContext += `
+                        <td><button class='addToBagButton' type='button' data-id=${product.id}>Dodaj do koszyka</button></td>`
+                } else if (role == 'admin') {
+                    tableContext += `
+                        <td> 
+                            <button class='deleteButton' type='button' data-id=${product.id}>Usuń</button>
+                            <button class='editButton' type='button' data-id=${product.id}>Edytuj</button>
+                        </td>`
+                }
+                tableContext += `
+                    </tr>`;
+            }
         }
-        products.innerHTML += `</tbody>`;
+        tableContext += `
+            </tbody>`;
+
+        if (tableContext == '') {
+               //odpali się zarówno gdy nie ma produktów, jak i gdy nie ma produktów spełniających kryteria wyszukiwania (czyli wsm spk)
+               //ale tylko w teorii, bo w praktyce to nigdy nie działa (albo jestem ślepy, ale specjalnie sprawdzałem na oryginalnym pliku i też nie działało)
+            tableContext = 'Brak produktów do wyświetlenia.';
+        }
+        products.innerHTML = tableContext;
 
         document.querySelectorAll('.deleteButton').forEach( function( button ) {
             button.addEventListener('click', deleteProduct);
@@ -134,6 +156,11 @@
         document.querySelectorAll('.addToBagButton').forEach( function( button ) {
             button.addEventListener('click', addProductToBag);
         })
+    }
+
+    // pobieranie listy produktów
+    async function refreshProducts() {
+        await constructTableContext();
     }
 
 
@@ -164,53 +191,8 @@
         var productToSearch = document.getElementById('productToSearch').value;
         
         if ( productToSearch ) {
-            var products = document.getElementById('list_of_products');
-            products.innerHTML = 
-                `<thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Nazwa produktu</th>
-                        <th>Cena</th>
-                        <th>Opis</th>
-                        <th>Dostępna ilość</th>
-                        <th>Dodaj do koszyka</th>
-                        <th>Działania administratora</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-            var response = await fetch( '/api/product', { method: 'get'} );
-            var jsonResponse = await response.json();
-            for ( var product of jsonResponse ) {
-                if(productToSearch == product.product){
-                    products.innerHTML +=
-                    `<tr class='productItem'>
-                        <td>${product.id}.</td>
-                        <td>${product.product}</td>
-                        <td>${product.price}</td>
-                        <td>${product.description}</td>
-                        <td>${product.amount}</td>
-                        <td><button class='addToBagButton' type='button' data-id=${product.id}>Dodaj do koszyka</button></td>   
-                        <td> 
-                            <button class='deleteButton' type='button' data-id=${product.id}>Usuń</button>
-                            <button class='editButton' type='button' data-id=${product.id}>Edytuj</button>
-                    </td>   
-                </tr>`;
-                }
-            }
-            products.innerHTML += `</tbody>`;
-            if(products.innerHTML == '') products.innerHTML = 'Brak produktów o podanej nazwie.'
+            await constructTableContext(productToSearch);
         } else alert('Nie podano nazwy wyszukiwanego produktu.');
-
-        document.querySelectorAll('.deleteButton').forEach( function( button ) {
-            button.addEventListener('click', deleteProduct);
-        })
-        document.querySelectorAll('.editButton').forEach( function( button ) {
-            button.addEventListener('click', editProduct);
-        })
-        document.querySelectorAll('.addToBagButton').forEach( function( button ) {
-            button.addEventListener('click', addProductToBag);
-        })
-    
     }
 
     // edytowanie istniejącego produktu
@@ -312,7 +294,8 @@
         refreshProducts();
 
         var btAdd = document.getElementById('btAdd');
-        btAdd.addEventListener('click', addProduct);
+        if (btAdd)
+            btAdd.addEventListener('click', addProduct);
 
         var btSearch = document.getElementById('btSearch');
         btSearch.addEventListener('click', searchProduct);

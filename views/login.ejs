@@ -11,3 +11,10 @@
         <%= locals.message %>
     </div>
 <% } %>
+
+<button onclick="goBack()"> Powrót</button>
+<script>
+    function goBack() {
+        window.history.back(); // Cofnij o jedną stronę w historii przeglądarki
+    }
+</script>

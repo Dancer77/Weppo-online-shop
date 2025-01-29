@@ -1,0 +1,123 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Courier New', sans-serif;
+    background-color: #f7f0ed;
+    color: #104931;
+    line-height: 1.4;
+}
+
+header {
+    background-color: #507255;
+    color: white;
+    padding: 10px 0;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2); 
+}
+
+.header-container {
+    margin: 0;       
+    padding: 20px;
+    margin-left: auto;      
+    margin-right: auto;
+    display: flex;
+    justify-content: space-between;  
+    align-items: center;  
+}
+
+.content {
+    margin: 0;       
+    padding: 20px;
+    margin-left: auto;      
+    margin-right: auto;
+}
+
+.admin {
+    font-weight: bold; 
+    font-size: 26px;
+}
+
+.action_name {
+    font-weight: bold; 
+    font-size: 17px;  
+}
+
+.styled_table {
+    width: 100%;
+    border-collapse: collapse; 
+    margin: 20px 0;
+    font-size: 16px;
+    text-align: left;
+    border: 1px solid #ddd; 
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.styled-table th, .styled-table td {
+    padding: 12px 15px; 
+}
+
+.table_input {
+    width: 100%;
+}
+
+input {
+    font-family: 'Courier New', Courier, monospace;  
+    font-size: 16px;  
+    padding: 5px 8px;  
+    border: 1px solid #507255;;  
+    border-radius: 5px;  
+    margin-left: auto;      
+    margin-right: auto;
+}
+
+button {
+    padding: 6px 11px;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: #d3bda4;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); 
+    border-radius: 10px;
+    transition: background-color 0.5s ease;
+}
+
+button:hover {
+    background-color: #ff8f00;
+}
+
+button:focus {
+    outline: none;
+}
+
+hr {
+    border: 0;
+    height: 2px;
+    background-color: #507255;;; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+    margin: 15px 0;            
+}
+
+.smaller_hr {
+    border: 0;
+    height: 1.5px;
+    background-color: #507255;;; 
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); 
+    margin: 15px 0;            
+}
+
+footer {
+    background-color: #507255; 
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}

@@ -1,65 +1,18 @@
-<%if(role == null){%>
-<button onclick="redirectToLogin()">Zaloguj się</button>
-<%} else {%>
-    <%if(role == "użytkownik"){%>
-        <h2>Panel użytkownika
-        <button onclick="redirectToBag()">Pokaż koszyk</button>
-        <button onclick="redirectToLogout()">Wyloguj się</button>
-        <button onclick="redirectToRemoveAccount()">Usuń konto</button>
-        </h2>
-    <%}%>
-
-    <%if(role == "admin"){%>
-        <h2>Panel administratora
-        <button onclick="redirectToUserList()">Pokaż użytkowników</button>
-        <button onclick="redirectToLogout()">Wyloguj się</button>
-        </h2>
-    <%}%>
-<%}%>
-<hr>
-
-<script>
-    function redirectToRemoveAccount() {
-        window.location.href = '/removeAccount';
-    }
-
-    // Przekierowanie do /login
-    function redirectToLogin() {
-        window.location.href = '/login';
-    }
-
-    function redirectToBag() {
-        const currentPath = window.location.pathname;  // Pobiera bieżącą ścieżkę URL
-        window.location.href = '/bag' + currentPath;
-    }
-
-    function redirectToUserList() {
-        const currentPath = window.location.pathname; 
-        window.location.href = '/userList' + currentPath;
-    }
-
-    function redirectToLogout() {
-        window.location.href = '/logout';
-    }
-</script>
-
-<h4>Wyszukaj produkt: <input id="productToSearch" type="text" />
+<div class="action_name">Wyszukaj produkt: <input id="productToSearch" type="text" />
     <button id='btSearch'>Szukaj</button>
     <button id='btClear'>Wyczyść</button>
-</h4>
+</div>
+<hr class="smaller_hr">
 
-<hr>
-
-<h3>Lista produktów:</h3>
 
 <style> td, th { border: 1px solid rgb(0, 0, 0); } </style>
-<table id="list_of_products"> </table>
+<table class="styled_table" id="list_of_products"> </table>
 
-<hr>
+<hr class="smaller_hr">
 
 <%if (role == "admin") {%>
-    <h4>Dodawanie nowego produktu</h4>
-    <table>
+    <p class="action_name">Dodawanie nowego produktu</p>
+    <table class="styled_table">
         <thead>
             <tr>
                 <th>Nowy produkt:</th>
@@ -71,10 +24,10 @@
         
         <tbody>
             <tr>
-                <td><input id="product" type="text" /></td>
-                <td><input id="price" type="text" /></td>
-                <td><input id="description" type="text" /></td>
-                <td><input id="amount" type="text" /></td>
+                <td><input class="table_input" id="product" type="text" /></td>
+                <td><input class="table_input" id="price" type="text" /></td>
+                <td><input class="table_input" id="description" type="text" /></td>
+                <td><input class="table_input" id="amount" type="text" /></td>
             </tr>
         </tbody>    
     </table>  
@@ -84,8 +37,16 @@
 
 <script>
     const role = "<%- role %>";
+
     
-    //zrobiłem wspólną funkcję dla wyświetlania i wyszukiwania, żeby łatwiej było debugować - jak przeczytasz to usuń ten komentarz
+    function compareName(name, toSearch) {
+        lowerName = name.toLowerCase();
+        lowerToSearch = toSearch.toLowerCase()
+        if(lowerName == lowerToSearch) return true;
+        if(lowerName.includes(lowerToSearch)) return true;
+        return false;
+    };
+    
     async function constructTableContext(productToSearch) {
         var products = document.getElementById('list_of_products');
 
@@ -94,7 +55,6 @@
         tableContext = 
             `<thead>
                 <tr>
-                    <th>Id</th>
                     <th>Nazwa produktu</th>
                     <th>Cena</th>
                     <th>Opis</th>
@@ -111,13 +71,17 @@
                 </tr>
             </thead>
         <tbody>`;
+
+        
         var response = await fetch( '/api/product', { method: 'get'} );
         var jsonResponse = await response.json();
+        var amountOfProducts = 0;
+        var productsInTable = 0;
         for ( var product of jsonResponse ) {
-            if(productToSearch == undefined || productToSearch == product.product){
+            amountOfProducts++;
+            if(productToSearch == undefined || compareName(product.product, productToSearch)){
                 tableContext +=
                     `<tr class='productItem'>
-                        <td>${product.id}.</td>
                         <td>${product.product}</td>
                         <td>${product.price}</td>
                         <td>${product.description}</td>
@@ -136,17 +100,16 @@
                 tableContext += `
                     </tr>`;
             }
+            else productsInTable++;
         }
         tableContext += `
             </tbody>`;
 
-        if (tableContext == '') {
-               //odpali się zarówno gdy nie ma produktów, jak i gdy nie ma produktów spełniających kryteria wyszukiwania (czyli wsm spk)
-               //ale tylko w teorii, bo w praktyce to nigdy nie działa (albo jestem ślepy, ale specjalnie sprawdzałem na oryginalnym pliku i też nie działało)
+        if (amountOfProducts == 0 || productsInTable == amountOfProducts) { //nie działa bo tableContext nigdy nie jest puste - zawsze ma nagłówki tabeli 
             tableContext = 'Brak produktów do wyświetlenia.';
         }
         products.innerHTML = tableContext;
-
+        
         document.querySelectorAll('.deleteButton').forEach( function( button ) {
             button.addEventListener('click', deleteProduct);
         })
@@ -160,6 +123,7 @@
 
     // pobieranie listy produktów
     async function refreshProducts() {
+        document.getElementById("productToSearch").value = "";
         await constructTableContext();
     }
 
@@ -170,7 +134,21 @@
         var price = document.getElementById('price').value;
         var description = document.getElementById('description').value;
         var amount = document.getElementById('amount').value;
-        if ( product && price && description && amount) {
+
+        
+        document.getElementById("product").value = "";
+        document.getElementById("price").value = "";
+        document.getElementById("description").value = "";
+        document.getElementById("amount").value = "";
+
+        const price_format = /^\d+(\.\d{1,2})?$/;
+        const amount_format = /^\d+$/;
+
+        if ( !price_format.test(price) ) {
+            alert('Nieodpowiedni format ceny. Prawidłowy format ceny: liczba.dwie_liczby_po_przecinku_opcjonalne')
+        } else if (!amount_format.test(amount) ){
+            alert('Nieodpowiedni format ilości. Prawidłowy format ilości: liczba całkowita dodatnia')
+        } else if ( product && price && description && amount) {
             var response = await fetch(
                 '/api/product',
                 {
@@ -181,6 +159,7 @@
                     },
                     body: JSON.stringify( { product, price, description, amount} )
                 } );
+            
             var jsonResponse = await response.json();
             await refreshProducts();
         } else alert('Wypełnij wszystkie pola nowego produktu');
@@ -212,16 +191,16 @@
             <tbody>`;
         var response = await fetch( '/api/product', { method: 'get'} );
         var jsonResponse = await response.json();
-
+        //ZMIANY DO SPRAWDZENIA --------------------------------------------------------------------------------------------------zostawiamy ID przy edytowaniu? - administrator może dobrze żeby widział
         for ( var product of jsonResponse ) {
             if(product.id == id){
                 products.innerHTML +=
                 `<tr class='productItem'>
                     <td>${product.id}.</td>
-                    <td><input id="edit_product" type="text" /></td>
-                    <td><input id="edit_price" type="text" /></td>
-                    <td><input id="edit_description" type="text" /></td>
-                    <td><input id="edit_amount" type="text" /></td> 
+                    <td><input class="table_input" id="edit_product" type="text" value=${product.product} /></td>
+                    <td><input class="table_input" id="edit_price" type="text" value=${product.price} /></td>
+                    <td><input class="table_input" id="edit_description" type="text" value=${product.description} /></td>
+                    <td><input class="table_input" id="edit_amount" type="text" value=${product.amount} /></td> 
                     <button class='saveButton' type='button'  data-id=${product.id}>Zapisz</button>
                     <button class="cancelButton" type="button" data-id="${product.id}">Anuluj</button>  
                 </tr>`;
@@ -234,7 +213,7 @@
                     <td>${product.description}</td>
                     <td>${product.amount}</td> 
                 </tr>`;
-            }
+            } //----------------------------------------------------------------------------------------------------------------------------
         }
 
         document.querySelectorAll('.saveButton').forEach( function( button ) {
@@ -253,8 +232,15 @@
         var price = document.getElementById('edit_price').value;
         var description = document.getElementById('edit_description').value;
         var amount = document.getElementById('edit_amount').value;
+        
+        const price_format = /^\d+(\.\d{1,2})?$/;
+        const amount_format = /^\d+$/;
 
-        if ( product && price && description && amount ) {
+        if ( !price_format.test(price) ) {
+            alert('Nieodpowiedni format ceny. Prawidłowy format ceny: liczba.dwie_liczby_po_przecinku_opcjonalne')
+        } else if (!amount_format.test(amount) ){
+            alert('Nieodpowiedni format ilości. Prawidłowy format ilości: liczba całkowita dodatnia')
+        } else if ( product && price && description && amount ) {
             var response = await fetch(`/api/product/${id}`, {
                 method: 'PUT',
                 headers: {
@@ -263,7 +249,7 @@
                 body: JSON.stringify({ product, price, description, amount }),
             });
         } else alert('Wypełnij wszystkie pola nowego produktu');
-
+        
         var jsonResponse = await response.json();
         await refreshProducts();
     }

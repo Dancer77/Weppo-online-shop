@@ -4,9 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
 </head>
 <body>
-    <h1>Sklep internetowy</h1>
-    <%- body %>
+    <header>
+        <div class="header-container">
+            <h1>Kwiaciarnia Flora 💐</h1>
+
+            <div class="button-container">
+                <%if(role == null){%>
+                    <button onclick="redirectToLogin()">Zaloguj się</button>
+                    <%} else {%>
+                        <%if(role == "użytkownik"){%>
+                            <button onclick="redirectToBag()">Pokaż koszyk</button>
+                            <button onclick="redirectToLogout()">Wyloguj się</button>
+                            <button onclick="redirectToRemoveAccount()">Usuń konto</button>
+                        <%}%>
+                    
+                        <%if(role == "admin"){%>
+                            <button onclick="redirectToUserList()">Pokaż użytkowników</button>
+                            <button onclick="redirectToLogout()">Wyloguj się</button>
+                        <%}%>
+                    <%}%>
+            </div>
+        </div>
+            
+        <script>
+            function redirectToRemoveAccount() {
+                window.location.href = '/removeAccount';
+            }
+        
+            // Przekierowanie do /login
+            function redirectToLogin() {
+                window.location.href = '/login';
+            }
+        
+            function redirectToBag() {
+                const currentPath = window.location.pathname;  
+                window.location.href = '/bag' + currentPath;
+            }
+        
+            function redirectToUserList() {
+                const currentPath = window.location.pathname; 
+                window.location.href = '/userList' + currentPath;
+            }
+        
+            function redirectToLogout() {
+                window.location.href = '/logout';
+            }
+        </script>   
+            
+    </header>
+
+    <div class="content">
+        <%if(role == "admin"){%>
+            <h2  class="admin">Panel administratora</h2>
+            <hr>
+            <%}%>
+            
+        <%- body %>
+    </div>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>🌸 O nas</h3>
+                <p>Najpiękniejsze kwiaty na każdą okazję! Dostarczamy świeże bukiety prosto pod Twoje drzwi.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>📍 Kontakt</h3>
+                <p>📞 Telefon: +48 123 456 789</p>
+                <p>📧 E-mail: kontakt@kwiaciarnia.pl</p>
+                <p>📍 Adres: ul. Kwiatowa 15, 00-000 Wrocław</p>
+            </div>
+    
+            <div class="footer-section">
+                <h3>🕒 Godziny otwarcia</h3>
+                <p>🗓 Pon-Pt: 9:00 - 18:00</p>
+                <p>🗓 Sobota: 10:00 - 16:00</p>
+                <p>🗓 Niedziela: Zamknięte</p>
+            </div>
+    
+            <div class="footer-section">
+                <h3>📲 Śledź nas</h3>
+                <p>
+                    <a href="#">Facebook</a> | <a href="#">Instagram</a> | <a href="#">TikTok</a>
+                </p>
+            </div>
+        </div>
+        <p class="footer-bottom">© 2025 Kwiaciarnia Flora | Wszystkie prawa zastrzeżone</p>
+    </footer>
+        
 </body>
 </html>

@@ -1,11 +1,11 @@
-//TODO: walidacja, czy nowy produkt jest poprawnie wpiisany (cena i ilość jako liczba) - W CHUJ ISTOTNE, bez tego baza się wysypie
-//TODO: przy czyszczeniu wyszukiwania, wyszukiwany tekst zostaje wpisany w pasku wyszukiwania
-//TODO: przy edycji powinniśmy widzieć stare dane i móc je edytować wsm zamiast wpisywać od nowa
-//TODO: dodać przycisk w koszyku kierujący do strony głównej (obecny się nie wyświetla)
-//TODO: (opcjonalnie) wyszukiwanie tylko po częściowej nazwie (np: wpisanie "rze" powinno powodować wyświetlanie produktu o nazwie "Krzesło")
-//TODO: po dodaniu nowego produktu, tabelka dodawania kolejnego produktu nie powinna zawierać danych właśnie dodanego - powinna być pusta
-//TODO: przycisk powrotu z userList nie działa
-//TODO: id produktu nie powinno być wyświetlane wsm
+//>>TODO: walidacja, czy nowy produkt jest poprawnie wpiisany (cena i ilość jako liczba) - W CHUJ ISTOTNE, bez tego baza się wysypie
+//>>TODO: przy czyszczeniu wyszukiwania, wyszukiwany tekst zostaje wpisany w pasku wyszukiwania
+//>>TODO: przy edycji powinniśmy widzieć stare dane i móc je edytować wsm zamiast wpisywać od nowa
+//>>TODO: dodać przycisk w koszyku kierujący do strony głównej (obecny się nie wyświetla)
+//>>TODO: (opcjonalnie) wyszukiwanie tylko po częściowej nazwie (np: wpisanie "rze" powinno powodować wyświetlanie produktu o nazwie "Krzesło")
+//>>TODO: po dodaniu nowego produktu, tabelka dodawania kolejnego produktu nie powinna zawierać danych właśnie dodanego - powinna być pusta
+//>>TODO: przycisk powrotu z userList nie działa
+//>>TODO: id produktu nie powinno być wyświetlane wsm
 //TODO: (opcjonalnie) przycisk wylogowania powinien być na każdej stronie
 
 
@@ -16,7 +16,7 @@
 //^ póki co na sztywno jest przekopiowana część frunkcji removeFromBagsInDb do db_products_operations.js
 //^^ewentualnie można zrobić edytowanie produktu zamiast jego usuwania i wstawiania, wtedy tego problemu nie będzie
 
-//TODO: nie działa ograniczenie liczby produktów w koszyku edit: już działa, tylko trzeba wolno klikać dodawanie ponad limit
+//>>TODO: nie działa ograniczenie liczby produktów w koszyku edit: już działa, tylko trzeba wolno klikać dodawanie ponad limit; edit od Klary: nie działało nadal w pewnych przypadkach - teraz działa na 100%
 //  bo inaczej się wywala - pewnie jest zbyt kosztowne czy coś (na razie to olać)
 
 const http = require('http');
@@ -42,6 +42,7 @@ app.use( express.urlencoded({extended: true}));
 app.use(expressLayouts);
 app.use(express.json());
 app.use(cookieParser('sgs90890s8g90as8rg90as8g9r8a0srg8'));
+app.use(express.static('views'));
 
 //sesja
 app.use(session({
@@ -57,7 +58,9 @@ app.use(session({
 
 //połączenie z bazą danych
 //TODO: (opcjonalnie) dodać łączenie za każdym razem, gdy wykonywane jest rządanie (Czy warto?)
-config.connectToDatabase();
+
+//ZAKOMENTOWANE ROBOCZO
+//config.connectToDatabase();
 
 //wyświetlanie listy produktów
 app.get('/api/product', async (req, res) => {
@@ -157,7 +160,8 @@ app.post('/api/addToBag/:id', authorize('użytkownik'), async (req, res) => {
         if(await checkAmount(1, id, myBag)) {
             var newInBag = await bagRepo.addToBag(id, product, price, 1);
             res.json(newInBag)
-        } //OPCJONALNIE: dodanie komunikatu, że dodana została maksymalna ilość produktu 
+        }
+        else res.json(); //OPCJONALNIE: dodanie komunikatu, że dodana została maksymalna ilość produktu 
         return;
     } catch (err) {
         console.error('Chujjj', err);

@@ -1,23 +1,17 @@
-//>>TODO: walidacja, czy nowy produkt jest poprawnie wpiisany (cena i ilość jako liczba) - W CHUJ ISTOTNE, bez tego baza się wysypie
-//>>TODO: przy czyszczeniu wyszukiwania, wyszukiwany tekst zostaje wpisany w pasku wyszukiwania
-//>>TODO: przy edycji powinniśmy widzieć stare dane i móc je edytować wsm zamiast wpisywać od nowa
-//>>TODO: dodać przycisk w koszyku kierujący do strony głównej (obecny się nie wyświetla)
-//>>TODO: (opcjonalnie) wyszukiwanie tylko po częściowej nazwie (np: wpisanie "rze" powinno powodować wyświetlanie produktu o nazwie "Krzesło")
-//>>TODO: po dodaniu nowego produktu, tabelka dodawania kolejnego produktu nie powinna zawierać danych właśnie dodanego - powinna być pusta
-//>>TODO: przycisk powrotu z userList nie działa
-//>>TODO: id produktu nie powinno być wyświetlane wsm
-//TODO: (opcjonalnie) przycisk wylogowania powinien być na każdej stronie
+//TODO: wyświetlanie listy użytkowników
+//TODO: składanie zamówień
+//TODO: lista zamówień
 
+//TODO: (opcjonalnie) przycisk wylogowania powinien być na każdej stronie
 
 //TODO: dorobić obsługę zamówień
 //TODO: dorobić wyświetlanie listy użytkowników
 //TODO: (opcjonalnie) jak się edytuje produkt, to znika on ze wszystkich koszyków (bo jest fizycznie usuwany z bazy i dodawany jest nowy), możnaby to zmienić w wolnej chwili
 //TODO: (jak starczy czasu) żeby edytowanie produktu było możliwe, powinienem jakoś rozwiązać cykkl zależności między modułami (db_bags_operations.js, db_products_operations.js)
 //^ póki co na sztywno jest przekopiowana część frunkcji removeFromBagsInDb do db_products_operations.js
-//^^ewentualnie można zrobić edytowanie produktu zamiast jego usuwania i wstawiania, wtedy tego problemu nie będzie
+//^^ewentualnie można zrobić edytowanie produktu zamiast jego usuwania i wstawiania na nowo, wtedy tego problemu nie będzie, ale będzie trzeba w koszykach aktualizować max ilość produktu - 
+//^^lepiej zoswtawić jak jest i rozwiązać jakoś cykl
 
-//>>TODO: nie działa ograniczenie liczby produktów w koszyku edit: już działa, tylko trzeba wolno klikać dodawanie ponad limit; edit od Klary: nie działało nadal w pewnych przypadkach - teraz działa na 100%
-//  bo inaczej się wywala - pewnie jest zbyt kosztowne czy coś (na razie to olać)
 
 const http = require('http');
 const express = require('express');
@@ -60,7 +54,7 @@ app.use(session({
 //TODO: (opcjonalnie) dodać łączenie za każdym razem, gdy wykonywane jest rządanie (Czy warto?)
 
 //ZAKOMENTOWANE ROBOCZO
-//config.connectToDatabase();
+config.connectToDatabase();
 
 //wyświetlanie listy produktów
 app.get('/api/product', async (req, res) => {
@@ -210,11 +204,10 @@ function authorize(...roles) {
 //strona główna
 app.get('/', (req, res) => {
     var role = req.session.role;
+
     console.log('rola: ' + role);
-    if(role)
-        res.render('basic_main', {role: role, layout: 'main_layout'});
-    else
-        res.render('basic_main', {role: null, layout: 'main_layout'});
+    
+    res.render('basic_main', {role: role, layout: 'main_layout'});
 });  
 
 //strona logowania
@@ -230,7 +223,7 @@ app.get('/login', (req, res) => {
     }
     
     console.log('render strony logowania');
-    res.render('login', {layout: 'main_layout'});
+    res.render('login', {role: req.session.role, layout: 'main_layout'});
 });
 
 //logowanie użytkownika
@@ -273,7 +266,7 @@ app.post('/login', async (req, res) => {
         }
         else {
             // błędne logowanie
-            res.render( 'login', { message : "Zła nazwa użytkownika lub hasło", role: "", layout: 'main_layout' } );
+            res.render( 'login', { message : "Zła nazwa użytkownika lub hasło", role: req.session.role, layout: 'main_layout' } );
         }
 
     } catch (err) {
@@ -283,7 +276,7 @@ app.post('/login', async (req, res) => {
 
 //strona rejestracji nowego użytkownika
 app.get('/register', (req, res) => {
-    res.render('register', {layout: 'main_layout'});
+    res.render('register', {role: req.session.role, layout: 'main_layout'});
 });
 
 //rejestracja nowego użytkownika
@@ -298,10 +291,10 @@ app.post('/register', async (req, res) => {
 
         //sprawdzanie poprawności nazwy i hasła
         if (users.find(user => user.name === username)) {
-            res.render('register', {message: 'Użytkownik o podanej nazwie już istnieje', layout: 'main_layout'});
+            res.render('register', {message: 'Użytkownik o podanej nazwie już istnieje', role: req.session.role, layout: 'main_layout'});
             return;
         } else if (userPassword !== scdPassword) {
-            res.render('register', {message: 'Podane hasła nie są takie same', layout: 'main_layout'});
+            res.render('register', {message: 'Podane hasła nie są takie same', role: req.session.role, layout: 'main_layout'});
             return;//nwm czy to jest potrzebne
         }
 
@@ -315,7 +308,7 @@ app.post('/register', async (req, res) => {
 
 //strona koszyka
 app.get('/bag', authorize('użytkownik'), (req, res) => {
-    res.render('bag', { layout: 'main_layout'});
+    res.render('bag', {role: req.session.role, layout: 'main_layout'});
 });
 
 //strona listy użytkowników

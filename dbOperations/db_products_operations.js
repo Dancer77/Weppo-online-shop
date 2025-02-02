@@ -23,9 +23,10 @@ async function addProductToDb(product) {
 
 async function removeProductFromDb(id) {
     try {
-        //TODO: tutaj chcę użyć removeFromBagsInDb(productId) z db_bags_operations.js
         await sql.query`DELETE FROM users_products_table 
                         WHERE product_id = ${id}`;
+        await sql.query`DELETE FROM orders_table
+                        WHERE product_id = ${id}`
         await sql.query`DELETE FROM products_table 
                         WHERE id = ${id}`
         console.log('Produkt usunięty');

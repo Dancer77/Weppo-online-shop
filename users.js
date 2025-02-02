@@ -1,6 +1,6 @@
 const db = require('./dbOperations/db_users_operations');
 
-users = [];
+users = []; //{id, name, password, email, role}
 
 id = null
 

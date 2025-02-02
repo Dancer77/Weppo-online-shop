@@ -25,6 +25,10 @@ async function removeUserFromDb(id) {
         //usunięcie wszystkich produktów w koszyku użytkownika
         await sql.query`DELETE FROM users_products_table 
                         WHERE user_id = ${id}`;
+        
+        //usunięcie zamówień użytkownika
+        await sql.query`DELETE FROM orders_table
+                        WHERE user_id = ${id}`
 
         await sql.query`DELETE FROM users_table 
                         WHERE id = ${id}`;

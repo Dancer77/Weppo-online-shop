@@ -20,7 +20,7 @@ async function getBagFromDb(userId) {
             }
             return {
                 id : product.id,
-                product : product.product,  //nazwa produktu (wolałbym name, ale już za dużo do zmieniania)
+                product : product.product,  //nazwa produktu
                 price : product.price,
                 amount : b.amount_in_bag
             }
@@ -76,10 +76,21 @@ async function removeFromBagsInDb(productId) {
     }
 }
 
+async function removeBagFromDb(userId) {
+    try {
+        await sql.query`DELETE FROM users_products_table 
+                        WHERE user_id = ${userId}`;
+        console.log('Koszyk usunięty z bazy');
+    } catch (err) {
+        console.error('Błąd przy usuwaniu koszyka z bazy:', err);
+    }
+}
+
 module.exports = {
     getBagFromDb,
     updateAmountInBagInDb,
     addToBagInDb,
     deleteFromBagInDb,
-    removeFromBagsInDb
+    removeFromBagsInDb,
+    removeBagFromDb
 }

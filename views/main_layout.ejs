@@ -13,6 +13,8 @@
             <h1>Kwiaciarnia Flora 💐</h1>
 
             <div class="button-container">
+                <button onclick="redirectToMenu()">Menu</button>
+
                 <% if (!role || role == undefined || role == null) {%>
                     <button onclick="redirectToLogin()">Zaloguj się</button>
                 <%} else if(role == "użytkownik"){%>
@@ -21,29 +23,35 @@
                     <button onclick="redirectToRemoveAccount()">Usuń konto</button>
                 <%} else if(role == "admin"){%>
                     <button onclick="redirectToUserList()">Pokaż użytkowników</button>
+                    <button onclick="redirectToOrderList()">Pokaż zamówienia</button>
                     <button onclick="redirectToLogout()">Wyloguj się</button>
                 <% } %>
             </div>
         </div>
             
         <script>
+            function redirectToMenu() {
+                window.location.href = '/';
+            }
+
             function redirectToRemoveAccount() {
                 window.location.href = '/removeAccount';
             }
         
-            // Przekierowanie do /login
             function redirectToLogin() {
                 window.location.href = '/login';
             }
         
             function redirectToBag() {
-                const currentPath = window.location.pathname;  
-                window.location.href = '/bag' + currentPath;
+                window.location.href = '/bag';
             }
         
             function redirectToUserList() {
-                const currentPath = window.location.pathname; 
-                window.location.href = '/userList' + currentPath;
+                window.location.href = '/userList';
+            }
+
+            function redirectToOrderList() {
+                window.location.href = '/orders';
             }
         
             function redirectToLogout() {

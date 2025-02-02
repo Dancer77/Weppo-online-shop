@@ -1,10 +1,9 @@
 <form method="POST">
-    Nazwa: <input type="text" id="name" name="name" value="" />
+    Nazwa: <input type="text" id="name" name="name" value="<%- name%>" />
     Hasło: <input type="password" id="password" name="password" value="" />
     <button id="btLogin">Zaloguj</button> 
 </form>
-
-<a href="/register">Zarejestruj się</a>
+<button onclick="redirectToRegister()">Zarejestruj się</button>
 
 <% if ( locals.message ) { %>
     <div class='message'>
@@ -16,5 +15,9 @@
 <script>
     function goBack() {
         window.history.back(); // Cofnij o jedną stronę w historii przeglądarki
+    }
+
+    function redirectToRegister() {
+        window.location.href = '/register'
     }
 </script>

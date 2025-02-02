@@ -4,7 +4,6 @@
 </div>
 <hr class="smaller_hr">
 
-
 <style> td, th { border: 1px solid rgb(0, 0, 0); } </style>
 <table class="styled_table" id="list_of_products"> </table>
 
@@ -36,6 +35,7 @@
 
 
 <script>
+    
     const role = "<%- role %>";
 
     
@@ -191,15 +191,14 @@
             <tbody>`;
         var response = await fetch( '/api/product', { method: 'get'} );
         var jsonResponse = await response.json();
-        //ZMIANY DO SPRAWDZENIA --------------------------------------------------------------------------------------------------zostawiamy ID przy edytowaniu? - administrator może dobrze żeby widział
         for ( var product of jsonResponse ) {
             if(product.id == id){
                 products.innerHTML +=
                 `<tr class='productItem'>
                     <td>${product.id}.</td>
-                    <td><input class="table_input" id="edit_product" type="text" value=${product.product} /></td>
+                    <td><input class="table_input" id="edit_product" type="text" value="${product.product}" /></td>
                     <td><input class="table_input" id="edit_price" type="text" value=${product.price} /></td>
-                    <td><input class="table_input" id="edit_description" type="text" value=${product.description} /></td>
+                    <td><input class="table_input" id="edit_description" type="text" value="${product.description}" /></td>
                     <td><input class="table_input" id="edit_amount" type="text" value=${product.amount} /></td> 
                     <button class='saveButton' type='button'  data-id=${product.id}>Zapisz</button>
                     <button class="cancelButton" type="button" data-id="${product.id}">Anuluj</button>  
@@ -213,7 +212,7 @@
                     <td>${product.description}</td>
                     <td>${product.amount}</td> 
                 </tr>`;
-            } //----------------------------------------------------------------------------------------------------------------------------
+            }
         }
 
         document.querySelectorAll('.saveButton').forEach( function( button ) {
@@ -261,10 +260,12 @@
 
     // usuwanie istniejącego produktu
     async function deleteProduct(e) {
-        e.preventDefault(); // gdyby był formularz to zabezpiecza przed odesłaniem - dobrze wiedzieć
-        var id = e.target.getAttribute('data-id');
-        await fetch(`/api/product/${id}`, { method: 'delete'});
-        await refreshProducts();
+        e.preventDefault(); // gdyby był formularz to zabezpiecza przed odesłaniem
+        if(confirm('Czy na pewno chcesz usunąć ten produkt')){
+            var id = e.target.getAttribute('data-id');
+            await fetch(`/api/product/${id}`, { method: 'delete'});
+            await refreshProducts();
+        }
     }
 
     //dodawanie produktu do koszyka

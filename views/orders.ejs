@@ -1,2 +1,61 @@
 <h2>Lista zamówień</h2>
-<hr>
+
+<style> td, th { border: 1px solid rgb(0, 0, 0); } </style>
+<table class="styled_table">
+    <thead>
+        <tr>
+            <th>Id zamówienia</th>
+            <th>Nazwa użytkownika</th>
+            <th>Kwota</th>
+            <th>Zamóione produkty</th>
+        </tr>
+    </thead>
+    <tbody id='list_of_orders'>
+        
+    </tbody>
+</table>
+
+<button onclick="goBack()">Powrót</button>
+
+<script>
+    function goBack() {
+        window.history.back(); 
+    }
+</script>
+
+
+<script>
+    function redirectToGoBack() {
+        window.location.href = '/goBack'
+    }
+
+    async function refreshOrderList() {
+        var table = document.getElementById('list_of_orders');
+        table.innerHTML = '';
+        const orders = JSON.parse('<%- JSON.stringify( orders ) %>');
+        var amountOfOrders = 0;
+        for ( var order of orders ) {
+            table.innerHTML +=
+                `<tr class='userList'>
+                    <td>${order.id}.</td>
+                    <td>${order.userName}</td>
+                    <td>${order.price}</td>
+                    <td>
+                        ${order.productsList.length > 0 
+                            ? order.productsList.map(p => 
+                                `${p.product} (ID: ${p.id}), Cena za sztukę: ${p.price}, Ilość: ${p.amount}`
+                              ).join('<br>')
+                            : "Brak produktów"}
+                    </td>
+                </tr>`;
+            amountOfOrders++;
+        }
+        if (amountOfOrders == 0) {
+            table.innerHTML = 'Obecnie nie ma żadnych zamówień'
+        }
+    }
+
+    window.addEventListener('load', () => {
+        refreshOrderList();
+    })
+</script>

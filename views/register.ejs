@@ -20,7 +20,7 @@
         <button type="submit">Potwierdź</button>
     </form>
     <p>Masz już konto? 
-        <a href="/login">Zaloguj się</a>
+        <button onclick="redirectToLogin()">Zaloguj się</button>
     </p>
 </div>
 
@@ -29,3 +29,9 @@
         <%= locals.message %>
     </div>
 <% } %>
+
+<script>
+    function redirectToLogin() {
+        window.location.href = '/login'
+    }
+</script>

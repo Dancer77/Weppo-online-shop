@@ -1,7 +1,6 @@
 const db = require('./dbOperations/db_orders_operations');
 
-let orders = [];
-let firstUse = true;  //sprawdzanie czy dane zostały już pobrane
+let orders = [];    //obiekty w formacie {id, userId, userName, productsList}
 let orderId = null;
 
 async function getNewId() {
@@ -9,8 +8,8 @@ async function getNewId() {
         await getOrders();
         //pozyskanie największego id zamówienia
         orderId = orders.reduce( (max, order) => {
-            return order.order_id > max 
-                ? order.order_id 
+            return order.id > max 
+                ? order.id 
                 : max;
         }, 0);
         //orders = [];    //nie ma potrzeby trzymać w pamięci wszystkich zamówień
@@ -19,35 +18,45 @@ async function getNewId() {
 }
 
 async function getOrders() {
-    if (firstUse) {
+    try {
         orders = await db.getOrdersFromDb();
-        firstUse = false;
+
+        console.log('Zamówienia pobrane')
+        return orders;
+    } catch (err) {
+        console.log('Błąd przy pobieraniu zamówień')
     }
-    return orders;
 }
 
-//let newId = orders.length + 1;
+async function addOrder(userId) {
+    try {
+        var orderId = await getNewId();
+        await db.addOrderToDb(orderId, userId);
+        
+        //testowo:
+        //orders = await getOrders()
 
-function addOrder(bag, userId) {
-    var id = getNewId();
-    var newOrder = {id, userId, bag}
-    orders.push( newOrder );
-    return newOrder;
+        console.log('Zamówienie dodane')
+        //return newOrder;
+    } catch (err) {
+        console.error('Błąd przy dodawaniu zamówienia:', err);
+    }
 }
+
+//TODO: removeOrder
 /*
-function updateStatus(id, status) {
-    var order = orders.find(o => o.id == id);
-    order.status = status;
-    return order;
-}
-*/
 function removeOrder(id) {
     orders = orders.filter(product => product.id != id); 
+}
+*/
+
+function clearOrders() {
+    orders = []
 }
   
 module.exports = {
     getOrders,
     addOrder,
-    //updateStatus,
-    removeOrder
+    //removeOrder,
+    clearOrders
 }

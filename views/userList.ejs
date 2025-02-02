@@ -1,4 +1,19 @@
 <h2>Lista użytkowników</h2>
+
+<style> td, th { border: 1px solid rgb(0, 0, 0); } </style>
+<table class="styled_table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Nazwa użytkownika</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody id='list_of_user_list'>
+        
+    </tbody>
+</table>
+
 <button onclick="goBack()">Powrót</button>
 
 <script>
@@ -13,4 +28,26 @@
         const currentPath = window.location.pathname;
         window.location.href = '/goBack' + currentPath;
     }
+
+    async function refreshUserList() {
+        var table = document.getElementById('list_of_user_list');
+        table.innerHTML = '';
+        const users = JSON.parse('<%- JSON.stringify( users ) %>');
+        var amountOfUsers = 0;
+        for ( var user of users ) {
+            table.innerHTML +=
+                `<tr class='userList'>
+                    <td>${user.id}.</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                </tr>`;
+            amountOfUsers++;
+        }
+        if (amountOfUsers == 0)
+            table.innerHTML = 'Nie ma jeszcze żadnych użytkowników';
+    }
+
+    window.addEventListener('load', () => {
+        refreshUserList();
+    })
 </script>

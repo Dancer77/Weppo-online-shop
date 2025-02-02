@@ -1,6 +1,6 @@
 const db = require('./dbOperations/db_bags_operations');
 
-let bag = [];
+let bag = []; //{id, product, price, amount}
 
 let firstUse = true;  //sprawdzanie czy dane zostały już pobrane
 let _userId = null;
@@ -79,6 +79,15 @@ async function removeFromBag(id, amount) {
     }
 }
 
+async function removeBag() {
+    try {
+        bag = [];
+        await db.removeBagFromDb(_userId);
+    } catch (err) {
+        console.error('Błąd przy usuwaniu koszyka:', err);
+    }
+}
+
 function clearBag() {
     bag = [];
     firstUse = true;
@@ -90,5 +99,6 @@ module.exports = {
     addToBag,
     updateAmount,
     removeFromBag,
-    clearBag
+    clearBag,
+    removeBag
 }

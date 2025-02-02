@@ -1,6 +1,6 @@
 const db = require('./dbOperations/db_products_operations')
 
-let products = [];
+let products = [];  // {id, product, price, description, amount}
 
 id = null
 
@@ -16,8 +16,8 @@ function getNewId() {
 }
 //let newId = products.length + 1;
 
-async function getProducts() {
-    if (products.length == []){
+async function getProducts(doit) {
+    if (products.length == [] || doit){
         try {
             products = await db.getProductsFromDb();
         } catch (err) {

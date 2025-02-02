@@ -1,17 +1,7 @@
-//TODO: wyświetlanie listy użytkowników
-//TODO: składanie zamówień
-//TODO: lista zamówień
-
-//TODO: (opcjonalnie) przycisk wylogowania powinien być na każdej stronie
-
-//TODO: dorobić obsługę zamówień
-//TODO: dorobić wyświetlanie listy użytkowników
-//TODO: (opcjonalnie) jak się edytuje produkt, to znika on ze wszystkich koszyków (bo jest fizycznie usuwany z bazy i dodawany jest nowy), możnaby to zmienić w wolnej chwili
-//TODO: (jak starczy czasu) żeby edytowanie produktu było możliwe, powinienem jakoś rozwiązać cykkl zależności między modułami (db_bags_operations.js, db_products_operations.js)
-//^ póki co na sztywno jest przekopiowana część frunkcji removeFromBagsInDb do db_products_operations.js
-//^^ewentualnie można zrobić edytowanie produktu zamiast jego usuwania i wstawiania na nowo, wtedy tego problemu nie będzie, ale będzie trzeba w koszykach aktualizować max ilość produktu - 
-//^^lepiej zoswtawić jak jest i rozwiązać jakoś cykl
-
+//TODO: przycisk powrotny nie uwzględnia logowania, można wrócić do strony na której 
+// był zalogowany admin bez posiadania jego roli
+//TODO: dodać zmniejszanie liczby dostępnych wmagazynie produktów po udanym złożeniu
+// zamówienia
 
 const http = require('http');
 const express = require('express');
@@ -23,9 +13,9 @@ const session = require('express-session');
 
 const productRepo = require('./productList');
 const bagRepo = require('./bag');
-const orderRepo = require('./orders');
 const usersRepo = require('./users');
 const pwd = require('./password');
+const orderRepo = require('./orders');
 
 var app = express();
 
@@ -52,8 +42,6 @@ app.use(session({
 
 //połączenie z bazą danych
 //TODO: (opcjonalnie) dodać łączenie za każdym razem, gdy wykonywane jest rządanie (Czy warto?)
-
-//ZAKOMENTOWANE ROBOCZO
 config.connectToDatabase();
 
 //wyświetlanie listy produktów
@@ -132,7 +120,7 @@ async function checkAmount(amountToAdd, id, myBag){
 
 //wyświetlanie koszyka
 app.get('/api/bag', authorize('użytkownik'), async (req, res) => {
-    console.log('userId w api/bag: ', req.session.userId);
+    //console.log('userId w api/bag: ', req.session.userId);
     res.json(await bagRepo.getBag(req.session.userId));
 });
 
@@ -163,27 +151,14 @@ app.post('/api/addToBag/:id', authorize('użytkownik'), async (req, res) => {
 });
 
 
-//POWYŻEJ WSZYSTKO GOTOWE
-//----------------------------------------------------------------------------
-//TODO
-//PONIŻEJ WSZYSTKO ROBOCZE - TRZEBA UWZGLĘDNIĆ LOGOWANIE
-
-//funkcja sprawdzająca, czy użytkownik jest w danej roli
-
-//function isUserInRole(/*user,*/myRole, role) {
-//    console.log(myRole + '    ' + role);
-//    return myRole == role;
-//}
-
-
 //middleware - strażnik, czy użytkownik jest zalogowany (i czy ma ciastko)
 function authorize(...roles) {
     return function(req, res, next) {
-        console.log('sesja: ', req.session);
+        //('sesja: ', req.session);
         if ( req.signedCookies.user ) {
             //console.log('\n' + req.signedCookies.user + '\n');
             //let user = req.signedCookies.user;
-            console.log('istnieje ciastko');
+            //console.log('istnieje ciastko');
             let myRole = req.session.role;
             if ( roles.length == 0 ||
                 roles.some( role => myRole == role )
@@ -194,7 +169,6 @@ function authorize(...roles) {
             }
         }
     // callback na brak autoryzacji
-    //res.render( 'login', { role: "", layout: 'main_layout' } );
     console.log('przekierowanie do logowania')
     res.redirect('/login?returnUrl=' + req.url);
     return;
@@ -214,7 +188,6 @@ app.get('/', (req, res) => {
 app.get('/login', (req, res) => {
     console.log('weszło do logowania');
     
-    //FIXME: przy przekierowaniu z authorize z przyisków, strona logowania nie jest wyświetlana
     if (req.session.userId) {
         console.log('Użytkownik jest już zalogowany');
         //TODO: dodać komunikat, że użytkownik jest już zalogowany
@@ -223,7 +196,7 @@ app.get('/login', (req, res) => {
     }
     
     console.log('render strony logowania');
-    res.render('login', {role: req.session.role, layout: 'main_layout'});
+    res.render('login', {role: req.session.role, name: "", layout: 'main_layout'});
 });
 
 //logowanie użytkownika
@@ -266,7 +239,7 @@ app.post('/login', async (req, res) => {
         }
         else {
             // błędne logowanie
-            res.render( 'login', { message : "Zła nazwa użytkownika lub hasło", role: req.session.role, layout: 'main_layout' } );
+            res.render( 'login', { message : "Zła nazwa użytkownika lub hasło", role: req.session.role, name: username, layout: 'main_layout' } );
         }
 
     } catch (err) {
@@ -312,18 +285,36 @@ app.get('/bag', authorize('użytkownik'), (req, res) => {
 });
 
 //strona listy użytkowników
-app.get('/userList', authorize('admin'), (req, res) => {
-    res.render('userList', {role: req.session.role, layout: 'main_layout'});
+app.get('/userList', authorize('admin'), async(req, res) => {
+    users = await usersRepo.getUsers();
+    console.log(users)
+    res.render('userList', {role: req.session.role, users: users ? users : [], layout: 'main_layout'});
 })
+
+//strona listy zamówień
+app.get('/orders', authorize('admin'), async(req, res) => {
+    console.log('Weszło do orders')
+    orders = await orderRepo.getOrders()
+    res.render('orders', {role: req.session.role, orders : orders ? orders : [], layout: 'main_layout'})
+})
+
+//składanie zamówienia
+app.get('/ordered', authorize('użytkownik'), async (req, res) => {
+    await orderRepo.addOrder(req.session.userId)
+    await bagRepo.removeBag();
+    res.redirect('/');
+});
+
 
 function clearAtLogout(req) {
     req.session.userId = null;
     req.session.role = null;
     bagRepo.clearBag();
+    orderRepo.clearOrders();
 }
 
 //wylogowanie
-app.get('/logout', authorize('użytkownik', 'admin'), (req, res) => {
+app.get('/logout', (req, res) => {
     clearAtLogout(req);
     res.cookie('user', '', { maxAge: -1} );
     res.redirect(`/`);
